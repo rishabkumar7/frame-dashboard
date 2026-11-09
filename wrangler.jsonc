@@ -1,0 +1,25 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "frame-dashboard",
+  "main": "./src/worker/index.js",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "not_found_handling": "none",
+    "run_worker_first": ["/api/*"]
+  },
+  // Non-secret settings. Change these to your home.
+  // Secrets (calendar URLs) go in .dev.vars locally and `wrangler secret put` in production.
+  "vars": {
+    "CITY_NAME": "Aubrey, TX",
+    "LATITUDE": "33.3043",
+    "LONGITUDE": "-96.9861",
+    "TIMEZONE": "America/Chicago",
+    "TEMP_UNIT": "fahrenheit",
+    "LOCALE": "en-US",
+    "NIGHT_START": "22",
+    "NIGHT_END": "6",
+    "CALENDAR_DAYS": "7",
+    // YouTube channel to show stats for. The API key is a secret: `npx wrangler secret put YOUTUBE_API_KEY`
+    "YOUTUBE_HANDLE": "@rishabincloud"
+  }
+}

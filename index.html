@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta name="theme-color" content="#171513" />
+    <title>Frame Dashboard</title>
+  </head>
+  <body>
+    <main id="app" class="dashboard">
+      <section class="col col-left">
+        <div class="card clock-card">
+          <p class="greeting" data-el="greeting"></p>
+          <p class="time" data-el="time">--:--</p>
+          <p class="date" data-el="date"></p>
+        </div>
+        <div class="card weather-card" data-el="weather">
+          <p class="muted">Loading weather…</p>
+        </div>
+      </section>
+
+      <section class="col col-mid">
+        <div class="card agenda-card">
+          <header class="card-head">
+            <h2>Agenda</h2>
+            <span class="pill" data-el="demo-pill" hidden>Demo events</span>
+          </header>
+          <div class="agenda" data-el="agenda"><p class="muted">Loading calendar…</p></div>
+          <div class="fade-bottom"></div>
+        </div>
+      </section>
+
+      <section class="col col-right">
+        <div class="card yt-card" data-el="youtube" hidden></div>
+        <button class="card photo-card" data-el="photo" type="button" aria-label="Toggle full-screen photos">
+          <img class="photo-layer" alt="" data-el="photo-a" />
+          <img class="photo-layer" alt="" data-el="photo-b" />
+          <div class="photo-empty" data-el="photo-empty" hidden>
+            <p class="photo-empty-title">Your photos go here</p>
+            <p class="muted">Drop JPEGs into <code>src/photos/</code>, run <code>npm run photos</code>, then deploy.</p>
+          </div>
+        </button>
+      </section>
+
+      <footer class="status" data-el="status"></footer>
+    </main>
+
+    <div class="night" data-el="night" hidden>
+      <p class="night-time" data-el="night-time"></p>
+      <p class="night-date" data-el="night-date"></p>
+    </div>
+
+    <script>
+      // Watchdog (plain ES5, runs even if the module below fails, e.g. a page from the previous
+      // deploy asking for a script that no longer exists). No dashboard within 20 s: reload,
+      // backing off 20 s, 40 s, 80 s ... up to 10 min. main.js sets window.__frameBooted.
+      (function () {
+        var KEY = 'frame-dashboard:watchdog';
+        var tries = 0;
+        try { tries = Number(sessionStorage.getItem(KEY) || 0); } catch (e) {}
+        var wait = Math.min(20000 * Math.pow(2, tries), 600000);
+        setTimeout(function () {
+          if (window.__frameBooted) {
+            try { sessionStorage.removeItem(KEY); } catch (e) {}
+            return;
+          }
+          try { sessionStorage.setItem(KEY, String(tries + 1)); } catch (e) {}
+          location.replace('/?r=' + Date.now());
+        }, wait);
+      })();
+    </script>
+    <script type="module" src="/src/client/main.js"></script>
+  </body>
+</html>

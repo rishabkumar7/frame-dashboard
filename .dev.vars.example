@@ -1,0 +1,11 @@
+# Copy to .dev.vars for local dev. In production run:
+#   npx wrangler secret put CALENDARS
+#
+# CALENDARS is a JSON array. "url" is the calendar's *secret iCal address*
+# (Google Calendar: Settings → your calendar → "Secret address in iCal format").
+# Leave CALENDARS unset to see demo events.
+CALENDARS='[{"name":"Family","color":"#e07a5f","url":"https://calendar.google.com/calendar/ical/.../basic.ics"}]'
+
+# YouTube Data API v3 key (Google Cloud console → APIs & Services → Credentials → API key,
+# with "YouTube Data API v3" enabled). Restrict the key to that API.
+YOUTUBE_API_KEY=AIza...

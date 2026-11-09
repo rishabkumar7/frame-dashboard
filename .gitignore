@@ -1,0 +1,19 @@
+node_modules/
+dist/
+.wrangler/
+.dev.vars
+.env
+# Keep firmware dumps and device notes out of git if you follow the rooting guides here
+backups/
+diagnostics/
+frames/
+
+# Full-size photos kept by `npm run photos`
+photos-originals/
+
+# macOS
+.DS_Store
+
+# Personal photos: deploys bundle them from this folder, but they stay out of the public repo
+src/photos/*
+!src/photos/.gitkeep

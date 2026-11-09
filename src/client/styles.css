@@ -1,0 +1,663 @@
+/*
+  Written for an old Android WebView (Chrome ~106, sometimes older):
+  - colours as #rrggbb or rgba() only (no 8-digit hex, no oklch/color-mix)
+  - no CSS nesting, no :has(), no dvh units
+  - no infinite animations (they pin the frame's slow CPU)
+  Sizes are in rem and the root size follows the viewport, so one layout fits
+  1024×600, 1280×800 and 1920×1080 frames.
+*/
+
+:root {
+  --bg: #171513;
+  --card: #221f1c;
+  --card-2: #2b2723;
+  --line: rgba(244, 237, 228, 0.08);
+  --text: #f4ede4;
+  --muted: rgba(244, 237, 228, 0.55);
+  --faint: rgba(244, 237, 228, 0.32);
+  --accent: #e07a5f;
+  --sage: #81b29a;
+  --sand: #f2cc8f;
+  --radius: 1.5rem;
+  --gap: 1.25rem;
+  --serif: 'Fraunces Variable', Georgia, serif;
+  --sans: 'Inter Variable', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  /* 16px at 1280×800; scales with the smaller viewport dimension */
+  font-size: min(1.25vw, 2vh);
+  background: var(--bg);
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  color: var(--text);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  overscroll-behavior: none;
+}
+
+p,
+h2 {
+  margin: 0;
+}
+
+code {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 0.85em;
+  color: var(--sand);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+/* ---------- layout ---------- */
+
+.dashboard {
+  height: 100vh;
+  padding: var(--gap);
+  padding-bottom: 2.6rem;
+  display: grid;
+  /* minmax(0, …): a long event title must truncate, not widen its column and push the
+     photo/YouTube column off-screen. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.95fr);
+  gap: var(--gap);
+  position: relative;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  min-height: 0;
+  min-width: 0;
+}
+
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 1.6rem 1.75rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.card-head h2 {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 1.6rem;
+  letter-spacing: -0.01em;
+}
+
+.pill {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(242, 204, 143, 0.12);
+  color: var(--sand);
+}
+
+/* ---------- clock ---------- */
+
+.clock-card {
+  background: var(--accent);
+  color: #1d1512;
+  padding-top: 1.4rem;
+  padding-bottom: 1.5rem;
+}
+
+.greeting {
+  font-size: 1.05rem;
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+.time {
+  font-family: var(--serif);
+  font-size: 7.4rem;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  margin: 0.35rem 0 0.5rem -0.3rem;
+  font-variant-numeric: lining-nums;
+}
+
+.time .ampm {
+  font-family: var(--sans);
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  margin-left: 0.5rem;
+}
+
+.date {
+  font-size: 1.35rem;
+  font-weight: 500;
+}
+
+/* ---------- weather ---------- */
+
+.weather-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.wx-now {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+}
+
+.wx-now .wx-icon {
+  width: 5.2rem;
+  height: 5.2rem;
+  flex: none;
+}
+
+.wx-temp {
+  font-family: var(--serif);
+  font-size: 4.6rem;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.wx-temp sup {
+  font-size: 1.8rem;
+  vertical-align: top;
+  position: relative;
+  top: 0.5rem;
+  margin-left: 0.15rem;
+  color: var(--muted);
+}
+
+.wx-desc {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.wx-meta {
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.wx-hours {
+  display: flex;
+  justify-content: space-between;
+  margin: 1.3rem 0 0;
+  padding: 1rem 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.wx-hour {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.wx-hour .wx-icon {
+  width: 2rem;
+  height: 2rem;
+  display: block;
+  margin: 0.35rem auto;
+}
+
+.wx-hour strong {
+  color: var(--text);
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.wx-days {
+  margin-top: 0.6rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.wx-day {
+  display: grid;
+  grid-template-columns: 3.4rem 2rem 1fr auto;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 1rem;
+}
+
+.wx-day .wx-icon {
+  width: 1.7rem;
+  height: 1.7rem;
+}
+
+.wx-day-name {
+  font-weight: 600;
+}
+
+.wx-day-precip {
+  color: #8ab4d8;
+  font-size: 0.85rem;
+}
+
+.wx-range {
+  font-variant-numeric: tabular-nums;
+}
+
+.wx-range span {
+  color: var(--faint);
+  margin-left: 0.5rem;
+}
+
+.wx-icon {
+  color: var(--text);
+}
+
+/* ---------- agenda ---------- */
+
+.agenda-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.agenda {
+  flex: 1;
+  overflow: hidden;
+}
+
+.agenda-day {
+  margin-bottom: 1.15rem;
+}
+
+.agenda-day-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 0.55rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.agenda-day-label span {
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--faint);
+}
+
+.event {
+  display: grid;
+  grid-template-columns: 0.3rem 5.4rem minmax(0, 1fr);
+  gap: 0.8rem;
+  align-items: start;
+  padding: 0.55rem 0;
+}
+
+.event + .event {
+  border-top: 1px solid var(--line);
+}
+
+.event-bar {
+  align-self: stretch;
+  border-radius: 1rem;
+  background: var(--sage);
+}
+
+.event-time {
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  padding-top: 0.1rem;
+}
+
+.event-time small {
+  display: block;
+  font-weight: 500;
+  color: var(--faint);
+  font-size: 0.8rem;
+  margin-top: 0.1rem;
+}
+
+.event-title {
+  font-size: 1.1rem;
+  font-weight: 500;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.event-sub {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-top: 0.15rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event.is-past {
+  opacity: 0.38;
+}
+
+.event.is-now {
+  background: var(--card-2);
+  border-radius: 0.9rem;
+  padding-left: 0.6rem;
+  padding-right: 0.6rem;
+  margin: 0 -0.6rem;
+  border-top-color: transparent;
+}
+
+.event.is-now + .event {
+  border-top-color: transparent;
+}
+
+.now-tag {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #1d1512;
+  background: var(--sand);
+  border-radius: 999px;
+  padding: 0.12rem 0.45rem;
+  margin-right: 0.45rem;
+  vertical-align: 0.15rem;
+}
+
+.agenda-empty {
+  color: var(--muted);
+  font-size: 1rem;
+  padding: 0.4rem 0 0.2rem;
+}
+
+.fade-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4rem;
+  pointer-events: none;
+  background: linear-gradient(rgba(34, 31, 28, 0), var(--card));
+}
+
+/* ---------- YouTube ---------- */
+
+.yt-card {
+  flex: none;
+  padding: 1.25rem 1.4rem 1.3rem;
+}
+
+.yt-card[hidden] {
+  display: none;
+}
+
+.yt-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.8rem;
+}
+
+.yt-logo {
+  width: 1.75rem;
+  height: 1.25rem;
+  flex: none;
+}
+
+.yt-name {
+  font-weight: 600;
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.yt-stats {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.yt-subs {
+  display: flex;
+  flex-direction: column;
+}
+
+.yt-big {
+  font-family: var(--serif);
+  font-size: 3.4rem;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.yt-label {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-top: 0.3rem;
+}
+
+.yt-minor {
+  text-align: right;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.yt-minor strong {
+  color: var(--text);
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.yt-latest {
+  display: flex;
+  gap: 0.85rem;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.yt-thumb {
+  width: 7.2rem;
+  height: 4.05rem;
+  object-fit: cover;
+  border-radius: 0.6rem;
+  flex: none;
+  background: var(--card-2);
+}
+
+.yt-latest-text {
+  min-width: 0;
+}
+
+.yt-latest-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--faint);
+}
+
+.yt-latest-title {
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.3;
+  margin-top: 0.2rem;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.yt-latest-meta {
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+.yt-hint {
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* ---------- photos ---------- */
+
+.photo-card {
+  flex: 1;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  background: var(--card-2);
+  cursor: pointer;
+}
+
+.photo-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 1.4s ease;
+}
+
+.photo-layer.is-shown {
+  opacity: 1;
+}
+
+.photo-empty {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  background:
+    radial-gradient(circle at 75% 25%, rgba(242, 204, 143, 0.35), rgba(242, 204, 143, 0) 40%),
+    radial-gradient(circle at 20% 70%, rgba(129, 178, 154, 0.35), rgba(129, 178, 154, 0) 45%),
+    linear-gradient(160deg, #3a302a, #221f1c);
+}
+
+.photo-empty[hidden] {
+  display: none;
+}
+
+.photo-empty-title {
+  font-family: var(--serif);
+  font-size: 1.9rem;
+  line-height: 1.15;
+}
+
+/* Tap the photo to fill the screen with it; tap again to return. */
+.photo-full .photo-card {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  border-radius: 0;
+  background: #000000;
+}
+
+.photo-full .yt-card {
+  visibility: hidden;
+}
+
+.photo-full .photo-layer {
+  object-fit: contain;
+}
+
+/* ---------- status line ---------- */
+
+.status {
+  position: absolute;
+  left: calc(var(--gap) + 0.4rem);
+  right: calc(var(--gap) + 0.4rem);
+  bottom: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--faint);
+}
+
+.status .is-stale {
+  color: var(--accent);
+}
+
+/* ---------- night mode ---------- */
+
+.night {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  background: #000000;
+  color: rgba(244, 237, 228, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.night[hidden] {
+  display: none;
+}
+
+.night-time {
+  font-family: var(--serif);
+  font-size: 11rem;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.night-date {
+  font-size: 1.4rem;
+  margin-top: 1rem;
+}
